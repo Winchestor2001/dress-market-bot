@@ -17,13 +17,13 @@ async def start_menu_btn():
     return btn.as_markup(resize_keyboard=True)
 
 
-async def select_category_btn(categories: list):
+async def select_items_list_btn(list_data: list):
     btn = ReplyKeyboardBuilder()
     btn.add(
-        *[KeyboardButton(text=f"{item.name}") for item in categories]
+        *[KeyboardButton(text=f"{item.name}") for item in list_data]
     )
     btn.row(
         KeyboardButton(text="🔙 Главное меню"),
     )
-
+    btn.adjust(2)
     return btn.as_markup(resize_keyboard=True)

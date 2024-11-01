@@ -1,7 +1,6 @@
 from aiogram.filters.callback_data import CallbackData
 
 
-class ManagementCallback(CallbackData, prefix='management'):
+class ProductCallback(CallbackData, prefix='product'):
     action: str
-    entity: int
     item_id: int

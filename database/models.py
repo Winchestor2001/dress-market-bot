@@ -18,6 +18,14 @@ class TelegramUser(BaseModel):
 
 class Category(BaseModel):
     name = CharField(max_length=150)
+    dimension_photo = CharField()
+
+    def __str__(self):
+        return self.name
+
+
+class ProductSize(BaseModel):
+    name = CharField(max_length=50)
 
     def __str__(self):
         return self.name
@@ -36,7 +44,7 @@ class Product(BaseModel):
     description = TextField()
     price = FloatField(default=0.0)
     photo = CharField()
-    sizes = CharField()
+    size_id = CharField()
     dimension = CharField()
     video_review = CharField()
     category = ForeignKeyField(Category, null=True, backref='products', on_delete='SET NULL')

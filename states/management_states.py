@@ -10,3 +10,8 @@ class ProductState(StatesGroup):
     waiting_for_video_review = State()
     waiting_for_photo = State()
     waiting_for_dimension = State()
+
+
+class CategoryState(StatesGroup):
+    name = State()
+    dimension_photo = State()
