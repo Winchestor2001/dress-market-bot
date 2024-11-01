@@ -1,8 +1,15 @@
 from . import commands
-
+from . import feedback_handlers
+from . import support_handlers
+from . import admin_handlers
+from . import product_handlers
 
 routers_list = [
     commands.router,
+    feedback_handlers.router,
+    support_handlers.router,
+    admin_handlers.router,
+    product_handlers.router,
 ]
 
 __all__ = [
