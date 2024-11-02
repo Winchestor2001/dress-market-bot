@@ -61,12 +61,12 @@ async def get_all_sizes_for_btn_obj():
 
 
 async def is_category_name_exists(category_name: str) -> bool:
-    category_exists = Category.select().where(fn.LOWER(Category.name) == category_name.lower()).exists()
+    category_exists = Category.select().where(Category.name ** category_name).exists()
     return category_exists
 
 
 async def is_size_name_exists(size_name: str) -> bool:
-    size_exists = ProductSize.select().where(fn.LOWER(ProductSize.name) == size_name.lower()).exists()
+    size_exists = ProductSize.select().where(ProductSize.name ** size_name).exists()
     return size_exists
 
 
@@ -102,12 +102,13 @@ async def delete_product_by_id(product_id: str):
 
 async def create_product_obj(name: str, description: str, price: float, category_id: str, size_id: str,
                              video_review_id: str, photo_id: str, dimension: str):
+    size = ProductSize.get(ProductSize.id == size_id)
     product = Product.create(
         name=name,
         description=description,
         price=price,
         category=category_id,
-        size_id=size_id,
+        size_id=size.name,
         video_review=video_review_id,
         photo=photo_id,
         dimension=dimension
@@ -124,7 +125,7 @@ async def get_filtered_products(category_name: str, size_name: str):
         .select()
         .where(
             (Product.category == category) &
-            (Product.size_id == size)
+            (Product.size_id == size.name)
         )
     )
 
