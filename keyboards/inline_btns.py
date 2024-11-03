@@ -16,8 +16,8 @@ async def support_btn():
 async def feedback_btn():
     btn = InlineKeyboardBuilder()
     btn.add(
-        InlineKeyboardButton(text="🌟 Отзыв на VK", url="https://vk.com/wall442619801_625"),
-        InlineKeyboardButton(text="🌟 Фотоотзыв на VK", url="https://vk.com/photo259231216_457359976")
+        InlineKeyboardButton(text="🌟 Отзывы в VK #1", url="https://vk.com/wall442619801_625"),
+        InlineKeyboardButton(text="🌟 Отзывы в VK #2", url="https://vk.com/photo259231216_457359976")
     )
     btn.adjust(1)
     return btn.as_markup()

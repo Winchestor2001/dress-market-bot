@@ -55,7 +55,20 @@ async def get_all_categories_for_btn_obj():
 async def get_all_sizes_for_btn_obj():
     sizes = ProductSize.select().order_by(ProductSize.name)
     if sizes.exists():
-        return sizes
+        sizes = ProductSize.select().order_by(ProductSize.name)
+
+        # Define the desired order for sizes
+        size_order = {
+            'S/M': 0,
+            'L': 1,
+            'XL': 2,
+            'XXL+': 3,
+        }
+
+        # Sort sizes using the defined order
+        sorted_sizes = sorted(sizes, key=lambda size: size_order.get(size.name, len(size_order)))
+
+        return sorted_sizes
     else:
         return []
 

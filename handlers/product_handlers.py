@@ -51,7 +51,7 @@ async def size_handler(message: Message, state: FSMContext):
             product_text = (
                 f"📦 <b>Название:</b> {item['name']}\n"
                 f"📝 <b>Описание:</b> {item['description']}\n"
-                f"💰 <b>Цена:</b> {item['price']} сум\n"
+                f"💰 <b>Цена:</b> {item['price']} руб\n"
                 f"📏 <b>Размер:</b> {item['size_id']}\n"
                 f"📂 <b>Категория:</b> {item['category']}\n"
             )
@@ -65,6 +65,7 @@ async def size_handler(message: Message, state: FSMContext):
 
 @router.callback_query(ProductCallback.filter())
 async def product_callback(c: CallbackQuery, state: FSMContext):
+    await c.answer()
     cd, action, item_id = c.data.split(":")
     if action == "video":
         video = await get_product_video_review(product_id=int(item_id))
