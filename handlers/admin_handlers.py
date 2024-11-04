@@ -97,7 +97,7 @@ async def process_product_description(message: Message, state: FSMContext):
     await state.set_state(ProductState.waiting_for_price)
 
 
-@router.message(ProductState.waiting_for_price, F.text.isnumeric())
+@router.message(ProductState.waiting_for_price, F.text)
 async def process_product_price(message: Message, state: FSMContext):
     price = float(message.text)
     await state.update_data(price=price)
