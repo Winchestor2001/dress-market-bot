@@ -18,7 +18,7 @@ class TelegramUser(BaseModel):
 
 class Category(BaseModel):
     name = CharField(max_length=150)
-    dimension_photo = CharField()
+    dimension_photo = CharField(null=True)
 
     def __str__(self):
         return self.name

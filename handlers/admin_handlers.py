@@ -26,10 +26,13 @@ async def category_name_state(message: Message, state: FSMContext):
     await state.set_state(CategoryState.dimension_photo)
 
 
-@router.message(CategoryState.dimension_photo,F.content_type.in_({'photo'}))
+@router.message(CategoryState.dimension_photo,F.content_type.in_({'photo', 'text'}))
 async def category_dimension_photo_state(message: Message, state: FSMContext):
     data = await state.get_data()
-    dimension_photo = message.photo[-1].file_id
+    if message.text and message.text == '.':
+        dimension_photo = None
+    else:
+        dimension_photo = message.photo[-1].file_id
     result = await create_category_obj(name=data['category'], dimension_photo=dimension_photo)
     await message.answer(text=result)
     await state.clear()

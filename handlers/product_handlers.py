@@ -72,6 +72,9 @@ async def product_callback(c: CallbackQuery, state: FSMContext):
         await c.message.reply_video(video=video)
     else:
         dimension, dimension_photo = await get_product_dimension(product_id=int(item_id))
-        await c.message.reply_photo(photo=dimension_photo, caption=dimension)
+        if dimension_photo:
+            await c.message.reply_photo(photo=dimension_photo, caption=dimension)
+        else:
+            await c.message.reply_text(text=dimension)
 
 
