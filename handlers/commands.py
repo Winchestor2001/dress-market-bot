@@ -25,6 +25,7 @@ async def start_bot(message: Message, state: FSMContext):
 @router.message(Command('admin'))
 async def admin_panel(message: Message, state: FSMContext):
     if message.from_user.id in ADMINS:
+
         commands = (
             "Добавление категории: <code>/add_category</code>\n"
             "Удаление категории: <code>/delete_category id_категории</code>\n"
@@ -33,13 +34,13 @@ async def admin_panel(message: Message, state: FSMContext):
 
             "Добавление продукта: <code>/add_product</code>\n"
             "Удаление продукта: <code>/delete_product id_продукта</code>\n"
+            "Изменить видеообзор: <code>/update_videoobzor id_продукта</code>\n"
             "Получение списка продуктов: <code>/list_products</code>\n\n"
 
             "Добавление размера: <code>/add_size название_размера</code>\n"
             "Удаление размера: <code>/delete_size id_размера</code>\n"
             "Получение списка размеров: <code>/list_sizes</code>"
         )
-
         await message.answer(
             text=f"Список команд:\n\n{commands}"
         )

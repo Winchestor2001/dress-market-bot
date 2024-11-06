@@ -46,7 +46,7 @@ class Product(BaseModel):
     photo = CharField()
     size_id = CharField()
     dimension = CharField()
-    video_review = CharField()
+    video_review = CharField(null=True)
     category = ForeignKeyField(Category, null=True, backref='products', on_delete='SET NULL')
 
     def __str__(self):

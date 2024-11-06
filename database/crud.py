@@ -96,7 +96,12 @@ async def get_single_category_obj(category_id: int):
     return category
 
 
-async def update_category_dimension_obj(category_name: int, dimension_photo):
+async def get_single_product_obj(product_id: int):
+    product = Product.get_or_none(Product.id == product_id)
+    return product
+
+
+async def update_category_dimension_obj(category_name: str, dimension_photo):
     category = Category.get_or_none(Category.name == category_name)
     if category:
         category.dimension_photo = dimension_photo
@@ -104,6 +109,16 @@ async def update_category_dimension_obj(category_name: int, dimension_photo):
         return f"✅ Фото замеры для категории '{category.name}' успешно обновлено!"
     else:
         return "❌ Категория с таким ID не найдена."
+
+
+async def update_product_video_review_obj(product_id: int, video_review):
+    product = Product.get_or_none(Product.id == product_id)
+    if product:
+        product.video_review = video_review
+        product.save()
+        return f"✅ Видеообзор для продукта '{product.name}' успешно обновлено!"
+    else:
+        return "❌ Продукт с таким ID не найдена."
 
 
 async def get_all_products():
