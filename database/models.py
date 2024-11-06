@@ -42,7 +42,7 @@ class VideoReview(BaseModel):
 class Product(BaseModel):
     name = CharField(max_length=150)
     description = TextField()
-    price = FloatField(default=0.0)
+    price = DecimalField(max_digits=10, decimal_places=2)
     photo = CharField()
     size_id = CharField()
     dimension = CharField()

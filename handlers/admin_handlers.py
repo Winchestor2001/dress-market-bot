@@ -137,8 +137,7 @@ async def process_product_description(message: Message, state: FSMContext):
 
 @router.message(ProductState.waiting_for_price, F.text)
 async def process_product_price(message: Message, state: FSMContext):
-    price = float(message.text)
-    await state.update_data(price=price)
+    await state.update_data(price=message.text)
     categories = await get_all_categories_for_btn_obj()
     btn = await admin_categories_btn(categories)
 
