@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 
 from database.crud import create_category_obj, get_all_categories_obj, delete_category_obj, get_all_products, \
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
-    delete_size_obj, get_all_sizes_for_btn_obj
+    delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj
 from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn
 from keyboards.reply_btns import remove_btn
 from states.management_states import ProductState, CategoryState
@@ -33,7 +33,10 @@ async def category_dimension_photo_state(message: Message, state: FSMContext):
         dimension_photo = None
     else:
         dimension_photo = message.photo[-1].file_id
-    result = await create_category_obj(name=data['category'], dimension_photo=dimension_photo)
+    if data.get("category_name", False):
+        result = await update_category_dimension_obj(category_name=data['category_name'], dimension_photo=dimension_photo)
+    else:
+        result = await create_category_obj(name=data['category'], dimension_photo=dimension_photo)
     await message.answer(text=result)
     await state.clear()
 
@@ -55,6 +58,23 @@ async def delete_category_command(message: Message):
         category_id = int(command_parts[1])
         result = await delete_category_obj(category_id)
         await message.answer(text=result)
+    except ValueError:
+        await message.answer(text="❌ Некорректный ID категории. Пожалуйста, введите числовое значение.")
+
+
+@router.message(Command('update_zamer'))
+async def delete_category_command(message: Message, state: FSMContext):
+    command_parts = message.text.split(maxsplit=1)
+    if len(command_parts) < 2:
+        await message.answer(text="Не указано ID категории для изменение замеры.")
+        return
+
+    try:
+        category_id = int(command_parts[1])
+        category = await get_single_category_obj(category_id)
+        await state.set_data({"category_name": category.name})
+        await message.answer("Отправьте фото для замеры:")
+        await state.set_state(CategoryState.dimension_photo)
     except ValueError:
         await message.answer(text="❌ Некорректный ID категории. Пожалуйста, введите числовое значение.")
 

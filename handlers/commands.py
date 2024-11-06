@@ -28,6 +28,7 @@ async def admin_panel(message: Message, state: FSMContext):
         commands = (
             "Добавление категории: <code>/add_category</code>\n"
             "Удаление категории: <code>/delete_category id_категории</code>\n"
+            "Изменить замеры: <code>/update_zamer id_категории</code>\n"
             "Получение списка категорий: <code>/list_categories</code>\n\n"
 
             "Добавление продукта: <code>/add_product</code>\n"

@@ -91,6 +91,20 @@ async def delete_category_obj(category_id: int):
     else:
         return "❌ Категория с таким ID не найдена."
 
+async def get_single_category_obj(category_id: int):
+    category = Category.get_or_none(Category.id == category_id)
+    return category
+
+
+async def update_category_dimension_obj(category_name: int, dimension_photo):
+    category = Category.get_or_none(Category.name == category_name)
+    if category:
+        category.dimension_photo = dimension_photo
+        category.save()
+        return f"✅ Фото замеры для категории '{category.name}' успешно обновлено!"
+    else:
+        return "❌ Категория с таким ID не найдена."
+
 
 async def get_all_products():
     products = Product.select().order_by(Product.name)
