@@ -65,12 +65,16 @@ async def size_handler(message: Message, state: FSMContext):
 
 @router.callback_query(ProductCallback.filter())
 async def product_callback(c: CallbackQuery, state: FSMContext):
-    await c.answer()
     cd, action, item_id = c.data.split(":")
     if action == "video":
         video = await get_product_video_review(product_id=int(item_id))
-        await c.message.reply_video(video=video)
+        if video:
+            await c.answer()
+            await c.message.reply_video(video=video)
+        else:
+            await c.answer("Еще нет видеообзора", show_alert=True)
     else:
+        await c.answer()
         dimension, dimension_photo = await get_product_dimension(product_id=int(item_id))
         if dimension_photo:
             await c.message.reply_photo(photo=dimension_photo, caption=dimension)

@@ -5,7 +5,8 @@ from aiogram.types import Message, CallbackQuery
 
 from database.crud import create_category_obj, get_all_categories_obj, delete_category_obj, get_all_products, \
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
-    delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj
+    delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj, \
+    update_product_video_review_obj, get_single_product_obj
 from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn
 from keyboards.reply_btns import remove_btn
 from states.management_states import ProductState, CategoryState
@@ -63,7 +64,7 @@ async def delete_category_command(message: Message):
 
 
 @router.message(Command('update_zamer'))
-async def delete_category_command(message: Message, state: FSMContext):
+async def update_zamer_command(message: Message, state: FSMContext):
     command_parts = message.text.split(maxsplit=1)
     if len(command_parts) < 2:
         await message.answer(text="Не указано ID категории для изменение замеры.")
@@ -77,6 +78,23 @@ async def delete_category_command(message: Message, state: FSMContext):
         await state.set_state(CategoryState.dimension_photo)
     except ValueError:
         await message.answer(text="❌ Некорректный ID категории. Пожалуйста, введите числовое значение.")
+
+
+@router.message(Command('update_videoobzor'))
+async def update_videoobzor_command(message: Message, state: FSMContext):
+    command_parts = message.text.split(maxsplit=1)
+    if len(command_parts) < 2:
+        await message.answer(text="Не указано ID продукта для изменение видеообзор.")
+        return
+
+    try:
+        product_id = int(command_parts[1])
+        product = await get_single_product_obj(product_id)
+        await state.set_data({"product_id": product.id})
+        await message.answer("Отправьте видео для видеообзора:")
+        await state.set_state(ProductState.waiting_for_video_review)
+    except ValueError:
+        await message.answer(text="❌ Некорректный ID продукт. Пожалуйста, введите числовое значение.")
 
 
 @router.message(Command('list_products'))
@@ -150,9 +168,21 @@ async def product_size_state(c: CallbackQuery, state: FSMContext):
     await state.set_state(ProductState.waiting_for_video_review)
 
 
-@router.message(ProductState.waiting_for_video_review, F.content_type.in_({'video'}))
+@router.message(ProductState.waiting_for_video_review, F.content_type.in_({'video', 'text'}))
 async def product_video_review_state(message: Message, state: FSMContext):
-    await state.update_data(video_review_id=message.video.file_id)
+    if message.text and message.text == '.':
+        video_review_id = None
+    else:
+        video_review_id = message.video.file_id
+    data = await state.get_data()
+    if data.get("product_id", False):
+        await state.update_data(video_review_id=video_review_id)
+        result = await update_product_video_review_obj(data['product_id'], video_review_id)
+        await message.answer(text=result)
+        await state.clear()
+        return
+    else:
+        await state.update_data(video_review_id=video_review_id)
     await message.answer("Отправьте фото продукта:")
     await state.set_state(ProductState.waiting_for_photo)
 
