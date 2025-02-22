@@ -14,13 +14,14 @@ from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_bt
 from keyboards.reply_btns import remove_btn
 from loader import bot
 from states.management_states import ProductState, CategoryState, MailState
+from utils.admin_filter import IsAdmin
 from utils.content_formatter import format_content
 
 router = Router()
 logger = logging.getLogger(__name__)
 
 
-@router.message(Command('add_category'))
+@router.message(IsAdmin(), Command('add_category'))
 async def add_category_command(message: Message, state: FSMContext):
     await message.answer(text="Введите название категории:")
     await state.set_state(CategoryState.name)
@@ -49,13 +50,13 @@ async def category_dimension_photo_state(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.message(Command('list_categories'))
+@router.message(IsAdmin(), Command('list_categories'))
 async def category_list_command(message: Message):
     categories = await get_all_categories_obj()
     await message.answer(text=categories)
 
 
-@router.message(Command('delete_category'))
+@router.message(IsAdmin(), Command('delete_category'))
 async def delete_category_command(message: Message):
     command_parts = message.text.split(maxsplit=1)
     if len(command_parts) < 2:
@@ -70,7 +71,7 @@ async def delete_category_command(message: Message):
         await message.answer(text="❌ Некорректный ID категории. Пожалуйста, введите числовое значение.")
 
 
-@router.message(Command('update_zamer'))
+@router.message(IsAdmin(), Command('update_zamer'))
 async def update_zamer_command(message: Message, state: FSMContext):
     command_parts = message.text.split(maxsplit=1)
     if len(command_parts) < 2:
@@ -87,7 +88,7 @@ async def update_zamer_command(message: Message, state: FSMContext):
         await message.answer(text="❌ Некорректный ID категории. Пожалуйста, введите числовое значение.")
 
 
-@router.message(Command('update_videoobzor'))
+@router.message(IsAdmin(), Command('update_videoobzor'))
 async def update_videoobzor_command(message: Message, state: FSMContext):
     command_parts = message.text.split(maxsplit=1)
     if len(command_parts) < 2:
@@ -104,13 +105,13 @@ async def update_videoobzor_command(message: Message, state: FSMContext):
         await message.answer(text="❌ Некорректный ID продукт. Пожалуйста, введите числовое значение.")
 
 
-@router.message(Command('list_products'))
+@router.message(IsAdmin(), Command('list_products'))
 async def list_products_command(message: Message):
     products = await get_all_products()
     await message.answer(text=products)
 
 
-@router.message(Command('delete_product'))
+@router.message(IsAdmin(), Command('delete_product'))
 async def delete_product_command(message: Message):
     command_parts = message.text.split(maxsplit=1)
     if len(command_parts) < 2:
@@ -122,7 +123,7 @@ async def delete_product_command(message: Message):
     await message.answer(text=result)
 
 
-@router.message(Command('add_product'))
+@router.message(IsAdmin(), Command('add_product'))
 async def add_product_command(message: Message, state: FSMContext):
     await message.answer("Введите название продукта:", reply_markup=remove_btn)
     await state.set_state(ProductState.waiting_for_name)
@@ -217,7 +218,7 @@ async def product_dimension_state(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.message(Command('add_size'))
+@router.message(IsAdmin(), Command('add_size'))
 async def add_size_command(message: Message, state: FSMContext):
     command_parts = message.text.split(maxsplit=1)
 
@@ -230,13 +231,13 @@ async def add_size_command(message: Message, state: FSMContext):
     await message.answer(text=result)
 
 
-@router.message(Command('list_sizes'))
+@router.message(IsAdmin(), Command('list_sizes'))
 async def size_list_command(message: Message):
     sizes = await get_all_sizes_obj()
     await message.answer(text=sizes)
 
 
-@router.message(Command('delete_size'))
+@router.message(IsAdmin(), Command('delete_size'))
 async def delete_size_command(message: Message):
     command_parts = message.text.split(maxsplit=1)
     if len(command_parts) < 2:
@@ -251,7 +252,7 @@ async def delete_size_command(message: Message):
         await message.answer(text="❌ Некорректный ID размера. Пожалуйста, введите числовое значение.")
 
 
-@router.message(Command('send'))
+@router.message(IsAdmin(), Command('send'))
 async def mail_command(message: Message, state: FSMContext):
     context = "Отправьте пост. (для отмены /start)"
     await message.answer(text=context)
