@@ -27,7 +27,7 @@ async def category_name_state(message: Message, state: FSMContext):
     await state.set_state(CategoryState.dimension_photo)
 
 
-@router.message(CategoryState.dimension_photo,F.content_type.in_({'photo', 'text'}))
+@router.message(CategoryState.dimension_photo, F.content_type.in_({'photo', 'text'}))
 async def category_dimension_photo_state(message: Message, state: FSMContext):
     data = await state.get_data()
     if message.text and message.text == '.':
@@ -35,7 +35,8 @@ async def category_dimension_photo_state(message: Message, state: FSMContext):
     else:
         dimension_photo = message.photo[-1].file_id
     if data.get("category_name", False):
-        result = await update_category_dimension_obj(category_name=data['category_name'], dimension_photo=dimension_photo)
+        result = await update_category_dimension_obj(category_name=data['category_name'],
+                                                     dimension_photo=dimension_photo)
     else:
         result = await create_category_obj(name=data['category'], dimension_photo=dimension_photo)
     await message.answer(text=result)
@@ -110,8 +111,8 @@ async def delete_product_command(message: Message):
         await message.answer(text="Не указано ID продукта.")
         return
 
-    product_id = command_parts[1]
-    result = await delete_product_by_id(product_id)
+    product_ids = [item.strip() for item in command_parts[1].split(',')]
+    result = await delete_product_by_id(product_ids)
     await message.answer(text=result)
 
 
