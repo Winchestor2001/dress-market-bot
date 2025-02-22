@@ -43,7 +43,10 @@ async def admin_panel(message: Message, state: FSMContext):
 
         "Добавление размера: <code>/add_size название_размера</code>\n"
         "Удаление размера: <code>/delete_size id_размера</code>\n"
-        "Получение списка размеров: <code>/list_sizes</code>"
+        "Получение списка размеров: <code>/list_sizes</code>\n\n"
+        
+        "Число пользователей в боте: <code>/stat</code>\n"
+        "Отправить рассылку: <code>/send</code>"
     )
     await message.answer(
         text=f"Список команд:\n\n{commands}"

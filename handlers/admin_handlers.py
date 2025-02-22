@@ -9,7 +9,7 @@ from aiogram.types import Message, CallbackQuery
 from database.crud import create_category_obj, get_all_categories_obj, delete_category_obj, get_all_products, \
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
     delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj, \
-    update_product_video_review_obj, get_single_product_obj, get_all_users_obj
+    update_product_video_review_obj, get_single_product_obj, get_all_users_obj, count_all_users_obj
 from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn
 from keyboards.reply_btns import remove_btn
 from loader import bot
@@ -250,6 +250,12 @@ async def delete_size_command(message: Message):
         await message.answer(text=result)
     except ValueError:
         await message.answer(text="❌ Некорректный ID размера. Пожалуйста, введите числовое значение.")
+
+
+@router.message(IsAdmin(), Command('stat'))
+async def analytic_command(message: Message):
+    users = await count_all_users_obj()
+    await message.answer(text=f"Всего пользователей: {users}")
 
 
 @router.message(IsAdmin(), Command('send'))

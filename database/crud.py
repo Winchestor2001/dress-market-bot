@@ -14,6 +14,11 @@ async def get_all_users_obj():
     return [model_to_dict(user) for user in users]
 
 
+async def count_all_users_obj():
+    users = TelegramUser.select().count()
+    return users
+
+
 async def create_category_obj(name: str, dimension_photo: str):
     category = Category.create(name=name, dimension_photo=dimension_photo)
     return (f"✅ Категория '{category.name}' успешно добавлена с ID {category.id}!\n\n"
