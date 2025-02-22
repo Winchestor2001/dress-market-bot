@@ -1,6 +1,17 @@
-from .models import db, Category, Product, ProductSize
-from peewee import fn
+from .models import db, Category, Product, ProductSize, TelegramUser
+from peewee import fn, DoesNotExist
 from playhouse.shortcuts import model_to_dict
+
+
+async def create_user_obj(telegram_id: int, username: str = None):
+    user = TelegramUser.get_or_none(telegram_id=telegram_id)
+    if not user:
+        TelegramUser.create(telegram_id=telegram_id, username=username)
+
+
+async def get_all_users_obj():
+    users = TelegramUser.select()
+    return [model_to_dict(user) for user in users]
 
 
 async def create_category_obj(name: str, dimension_photo: str):
@@ -91,6 +102,7 @@ async def delete_category_obj(category_id: int):
     else:
         return "❌ Категория с таким ID не найдена."
 
+
 async def get_single_category_obj(category_id: int):
     category = Category.get_or_none(Category.id == category_id)
     return category
@@ -133,13 +145,17 @@ async def get_all_products():
         return "❌ Продукты пока не добавлены."
 
 
-async def delete_product_by_id(product_id: str):
-    try:
-        product = Product.get(Product.id == product_id)
-        product.delete_instance()
-        return f"✅ Продукт с ID <code>{product_id}</code> успешно удален!"
-    except Product.DoesNotExist:
-        return f"❌ Продукт с ID <code>{product_id}</code> не найден."
+async def delete_product_by_id(product_ids: list):
+    messages = []
+    for product_id in product_ids:
+        try:
+            product = Product.get(Product.id == product_id)
+            product.delete_instance()
+            messages.append(f"✅ Продукт с ID <code>{product_id}</code> успешно удален!")
+        except DoesNotExist:
+            messages.append(f"❌ Продукт с ID <code>{product_id}</code> не найден.")
+
+    return "\n".join(messages)
 
 
 async def create_product_obj(name: str, description: str, price: float, category_id: str, size_id: str,

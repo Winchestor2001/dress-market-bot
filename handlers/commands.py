@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from config import ADMINS
+from database.crud import create_user_obj
 from keyboards.reply_btns import start_menu_btn
 
 router = Router()
@@ -13,6 +14,10 @@ router = Router()
 async def start_bot(message: Message, state: FSMContext):
     await state.clear()
     btn = await start_menu_btn()
+    await create_user_obj(
+        telegram_id=message.from_user.id,
+        username=message.from_user.username,
+    )
     full_name = message.from_user.full_name
     await message.answer(
         text=f"👋 Привет, {full_name}! 👋\n\n"

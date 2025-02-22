@@ -56,3 +56,11 @@ async def product_btn(product_id: int):
     btn.adjust(2)
     return btn.as_markup()
 
+
+async def mail_btn(buttons: list):
+    btn = InlineKeyboardBuilder()
+    btn.add(
+        *[InlineKeyboardButton(text=item['text'], url=item['link']) for item in buttons]
+    )
+    btn.adjust(1)
+    return btn.as_markup()

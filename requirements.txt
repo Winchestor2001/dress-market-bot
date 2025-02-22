@@ -1,3 +1,4 @@
 aiogram==3.13.1
 environs==11.0.0
 peewee==3.17.7
+playhouse==0.1.0
