@@ -1,6 +1,17 @@
-from .models import db, Category, Product, ProductSize
+from .models import db, Category, Product, ProductSize, TelegramUser
 from peewee import fn
 from playhouse.shortcuts import model_to_dict
+
+
+async def create_user_obj(telegram_id: int, username: str = None):
+    user = TelegramUser.get_or_none(telegram_id=telegram_id)
+    if not user:
+        TelegramUser.create(telegram_id=telegram_id, username=username)
+
+
+async def get_all_users_obj():
+    users = TelegramUser.select()
+    return [model_to_dict(user) for user in users]
 
 
 async def create_category_obj(name: str, dimension_photo: str):
@@ -90,6 +101,7 @@ async def delete_category_obj(category_id: int):
         return f"✅ Категория '{category.name}' успешно удалена!"
     else:
         return "❌ Категория с таким ID не найдена."
+
 
 async def get_single_category_obj(category_id: int):
     category = Category.get_or_none(Category.id == category_id)
