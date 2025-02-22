@@ -19,3 +19,5 @@ class CategoryState(StatesGroup):
 
 class MailState(StatesGroup):
     mail_message = State()
+    mail_scheduled_message = State()
+    scheduled_time = State()

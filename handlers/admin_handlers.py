@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime
 
 from aiogram import Router, F
 from aiogram.filters import Command
@@ -9,7 +10,8 @@ from aiogram.types import Message, CallbackQuery
 from database.crud import create_category_obj, get_all_categories_obj, delete_category_obj, get_all_products, \
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
     delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj, \
-    update_product_video_review_obj, get_single_product_obj, get_all_users_obj, count_all_users_obj
+    update_product_video_review_obj, get_single_product_obj, get_all_users_obj, count_all_users_obj, \
+    save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post
 from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn
 from keyboards.reply_btns import remove_btn
 from loader import bot
@@ -327,3 +329,75 @@ async def mail_message_state(message: Message, state: FSMContext):
 
     await message.answer(text=report_message)
     await state.clear()
+
+
+@router.message(IsAdmin(), Command('schedule'))
+async def schedule_mail_command(message: Message, state: FSMContext):
+    await message.answer("Введите время рассылки в формате `YYYY-MM-DD HH:MM` (UTC). Для отмены /start")
+    await state.set_state(MailState.scheduled_time)
+
+
+@router.message(MailState.scheduled_time)
+async def schedule_time_state(message: Message, state: FSMContext):
+    try:
+        schedule_time = datetime.strptime(message.text, "%Y-%m-%d %H:%M")
+        if schedule_time < datetime.utcnow():
+            return await message.answer("Указанное время уже прошло. Введите другое время.")
+
+        await state.update_data(schedule_time=schedule_time)
+        await message.answer("Отправьте пост для запланированной рассылки.")
+        await state.set_state(MailState.mail_scheduled_message)
+    except ValueError:
+        await message.answer("Неверный формат. Введите время в формате `YYYY-MM-DD HH:MM`")
+
+
+@router.message(MailState.mail_scheduled_message)
+async def scheduled_mail_message_state(message: Message, state: FSMContext):
+    data = await state.get_data()
+    schedule_time = data.get("schedule_time")
+
+    post_type = message.content_type
+    if post_type not in ('text', 'photo', 'video', 'animation'):
+        return await message.answer("Неверный пост")
+
+    content = message.html_text
+    content = await format_content(content=content)
+    btn = await mail_btn(content['buttons'])
+
+    post_data = {
+        "type": post_type,
+        "content": content,
+        "schedule_time": schedule_time,
+        "buttons": btn
+    }
+
+    await save_scheduled_post(post_data)
+
+    await message.answer(f"✅ Пост запланирован на {schedule_time.strftime('%Y-%m-%d %H:%M UTC')}")
+    await state.clear()
+
+
+@router.message(IsAdmin(), Command('scheduled'))
+async def view_scheduled_posts(message: Message):
+    scheduled_posts = await get_all_scheduled_posts()
+
+    if not scheduled_posts:
+        return await message.answer("Нет запланированных постов.")
+
+    response = "📆 Запланированные рассылки:\n\n"
+    for post in scheduled_posts:
+        response += f"📌 {post['id']} | {post['schedule_time']} | {post['type']}\n"
+
+    response += "\nДля удаления поста: /delete_schedule ID"
+    await message.answer(response)
+
+
+@router.message(IsAdmin(), Command('delete_schedule'))
+async def delete_scheduled_post_command(message: Message):
+    post_id = message.text.split(" ")[1]
+    success = await delete_scheduled_post(int(post_id))
+
+    if success:
+        await message.answer(f"✅ Запланированный пост {post_id} удалён.")
+    else:
+        await message.answer(f"❌ Пост {post_id} не найден.")
