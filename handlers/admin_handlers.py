@@ -1,3 +1,6 @@
+import asyncio
+import logging
+
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -6,12 +9,15 @@ from aiogram.types import Message, CallbackQuery
 from database.crud import create_category_obj, get_all_categories_obj, delete_category_obj, get_all_products, \
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
     delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj, \
-    update_product_video_review_obj, get_single_product_obj
-from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn
+    update_product_video_review_obj, get_single_product_obj, get_all_users_obj
+from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn
 from keyboards.reply_btns import remove_btn
-from states.management_states import ProductState, CategoryState
+from loader import bot
+from states.management_states import ProductState, CategoryState, MailState
+from utils.content_formatter import format_content
 
 router = Router()
+logger = logging.getLogger(__name__)
 
 
 @router.message(Command('add_category'))
@@ -243,3 +249,74 @@ async def delete_size_command(message: Message):
         await message.answer(text=result)
     except ValueError:
         await message.answer(text="❌ Некорректный ID размера. Пожалуйста, введите числовое значение.")
+
+
+@router.message(Command('send'))
+async def mail_command(message: Message, state: FSMContext):
+    context = "Отправьте пост. (для отмены /start)"
+    await message.answer(text=context)
+    await state.set_state(MailState.mail_message)
+
+
+@router.message(MailState.mail_message)
+async def mail_message_state(message: Message, state: FSMContext):
+    post_type = message.content_type
+    if post_type not in ('text', 'photo', 'video', 'animation'):
+        return await message.answer("Неверный пост")
+
+    content = message.html_text
+    content = await format_content(content=content)
+    btn = await mail_btn(content['buttons'])
+
+    media_data = {
+        'text': {'method': bot.send_message, 'params': {'text': content['message_text'], 'reply_markup': btn}},
+        'photo': {
+            'method': bot.send_photo,
+            'params': {'photo': message.photo[-1].file_id if message.photo else None,
+                       'caption': content['message_text'], 'reply_markup': btn}
+        },
+        'video': {
+            'method': bot.send_video,
+            'params': {'video': message.video.file_id if message.video else None,
+                       'caption': content['message_text'], 'reply_markup': btn}
+        },
+        'animation': {
+            'method': bot.send_animation,
+            'params': {'animation': message.animation.file_id if message.animation else None,
+                       'caption': content['message_text'], 'reply_markup': btn}
+        }
+    }
+
+    send_method = media_data[post_type]['method']
+    send_params = media_data[post_type]['params']
+
+    users = await get_all_users_obj()
+    total_users = len(users)
+    sent_count = 0
+    failed_count = 0
+    failed_users = []
+
+    for user in users:
+        try:
+            await send_method(chat_id=user['telegram_id'], **send_params)
+            sent_count += 1
+            await asyncio.sleep(0.5)
+        except Exception as e:
+            failed_count += 1
+            failed_users.append(f"{user['username']} ({user['telegram_id']})")
+            logger.error(f"Ошибка при отправке пользователю {user['telegram_id']} - {user['username']}: {e}")
+            continue
+
+    report_message = (
+        f"📢 Рассылка завершена!\n\n"
+        f"👥 Всего пользователей: {total_users}\n"
+        f"✅ Успешно отправлено: {sent_count}\n"
+        f"❌ Ошибок: {failed_count}\n"
+    )
+
+    if failed_users:
+        failed_list = "\n".join(failed_users[:10])
+        report_message += f"\n❗ Ошибки у следующих пользователей:\n{failed_list}"
+
+    await message.answer(text=report_message)
+    await state.clear()

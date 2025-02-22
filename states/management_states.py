@@ -15,3 +15,7 @@ class ProductState(StatesGroup):
 class CategoryState(StatesGroup):
     name = State()
     dimension_photo = State()
+
+
+class MailState(StatesGroup):
+    mail_message = State()
