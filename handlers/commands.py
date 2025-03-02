@@ -41,7 +41,8 @@ async def admin_panel(message: Message, state: FSMContext):
         
         "Число пользователей в боте: <code>/stat</code>\n"
         "Отправить рассылку: <code>/send</code>\n"
-        "Список отложенных рассылок: <code>/scheduled</code>"
+        "Список отложенных рассылок: <code>/scheduled</code>/n"
+        "Экспортировать список товаров: <code>/export</code>"
     )
     await message.answer(
         text=f"Список команд:\n\n{commands}"
