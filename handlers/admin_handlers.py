@@ -12,9 +12,10 @@ from database.crud import create_category_obj, get_all_categories_obj, delete_ca
     delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj, \
     update_product_video_review_obj, get_single_product_obj, get_all_users_obj, count_all_users_obj, \
     save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post
-from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn
+from keyboards.callback_data import MailOptionCallback
+from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn, mail_options_btn
 from keyboards.reply_btns import remove_btn
-from loader import bot
+from loader import bot, MOSCOW_TZ
 from states.management_states import ProductState, CategoryState, MailState
 from utils.admin_filter import IsAdmin
 from utils.content_formatter import format_content
@@ -262,9 +263,21 @@ async def analytic_command(message: Message):
 
 @router.message(IsAdmin(), Command('send'))
 async def mail_command(message: Message, state: FSMContext):
-    context = "Отправьте пост. (для отмены /start)"
-    await message.answer(text=context)
-    await state.set_state(MailState.mail_message)
+    context = "Выберите тип отправки. (для отмены /start)"
+    btn = await mail_options_btn()
+    await message.answer(text=context, reply_markup=btn)
+
+
+@router.callback_query(MailOptionCallback.filter())
+async def mail_filter_callback_query(c: CallbackQuery, state: FSMContext):
+    schedule = int(c.data.split(":")[-1])
+    if schedule:
+        context = "Введите время рассылки в формате `YYYY-MM-DD HH:MM` (МСК). (для отмены /start)"
+        await state.set_state(MailState.scheduled_time)
+    else:
+        context = "Отправьте пост. (для отмены /start)"
+        await state.set_state(MailState.mail_message)
+    await c.message.edit_text(text=context)
 
 
 @router.message(MailState.mail_message)
@@ -331,17 +344,13 @@ async def mail_message_state(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.message(IsAdmin(), Command('schedule'))
-async def schedule_mail_command(message: Message, state: FSMContext):
-    await message.answer("Введите время рассылки в формате `YYYY-MM-DD HH:MM` (UTC). Для отмены /start")
-    await state.set_state(MailState.scheduled_time)
-
-
 @router.message(MailState.scheduled_time)
 async def schedule_time_state(message: Message, state: FSMContext):
     try:
         schedule_time = datetime.strptime(message.text, "%Y-%m-%d %H:%M")
-        if schedule_time < datetime.utcnow():
+        schedule_time = MOSCOW_TZ.localize(schedule_time)
+        now_moscow = datetime.now(MOSCOW_TZ)
+        if schedule_time < now_moscow:
             return await message.answer("Указанное время уже прошло. Введите другое время.")
 
         await state.update_data(schedule_time=schedule_time)
@@ -373,7 +382,7 @@ async def scheduled_mail_message_state(message: Message, state: FSMContext):
 
     await save_scheduled_post(post_data)
 
-    await message.answer(f"✅ Пост запланирован на {schedule_time.strftime('%Y-%m-%d %H:%M UTC')}")
+    await message.answer(f"✅ Пост запланирован на {schedule_time.strftime('%Y-%m-%d %H:%M UTC')} по МСК")
     await state.clear()
 
 
@@ -386,9 +395,9 @@ async def view_scheduled_posts(message: Message):
 
     response = "📆 Запланированные рассылки:\n\n"
     for post in scheduled_posts:
-        response += f"📌 {post['id']} | {post['schedule_time']} | {post['type']}\n"
+        response += f"📌 {post['id']} | {post['schedule_time']} | {post['post_type']}\n"
 
-    response += "\nДля удаления поста: /delete_schedule ID"
+    response += "\nДля удаления поста: <code>/delete_schedule ID</code>"
     await message.answer(response)
 
 

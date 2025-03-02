@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
-from keyboards.callback_data import ProductCallback
+from keyboards.callback_data import ProductCallback, MailOptionCallback
 
 
 async def support_btn():
@@ -56,6 +56,15 @@ async def product_btn(product_id: int):
     btn.adjust(2)
     return btn.as_markup()
 
+
+async def mail_options_btn():
+    btn = InlineKeyboardBuilder()
+    btn.add(
+        InlineKeyboardButton(text="📝 Простая отправка", callback_data=MailOptionCallback(schedule=False).pack()),
+        InlineKeyboardButton(text="🕔 Отложенная отправка", callback_data=MailOptionCallback(schedule=True).pack()),
+    )
+    btn.adjust(1)
+    return btn.as_markup()
 
 async def mail_btn(buttons: list):
     btn = InlineKeyboardBuilder()

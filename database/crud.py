@@ -242,7 +242,7 @@ async def get_scheduled_posts(now: datetime) -> List[Dict[str, Any]]:
 
 async def delete_scheduled_post(post_id: int):
     """Delete a scheduled post after sending."""
-    ScheduledPost.delete().where(ScheduledPost.id == post_id).execute()
+    return ScheduledPost.delete().where(ScheduledPost.id == post_id).execute()
 
 async def get_all_scheduled_posts() -> List[Dict[str, Any]]:
     """Retrieve all scheduled posts."""
