@@ -51,3 +51,10 @@ class Product(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class ScheduledPost(BaseModel):
+    post_type = CharField()
+    content = TextField()
+    schedule_time = DateTimeField()
+    buttons = TextField(null=True)

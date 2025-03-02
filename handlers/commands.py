@@ -3,8 +3,6 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from config import ADMINS
-from database.crud import create_user_obj
 from keyboards.reply_btns import start_menu_btn
 from utils.admin_filter import IsAdmin
 
@@ -15,10 +13,6 @@ router = Router()
 async def start_bot(message: Message, state: FSMContext):
     await state.clear()
     btn = await start_menu_btn()
-    await create_user_obj(
-        telegram_id=message.from_user.id,
-        username=message.from_user.username,
-    )
     full_name = message.from_user.full_name
     await message.answer(
         text=f"👋 Привет, {full_name}! 👋\n\n"
@@ -46,7 +40,8 @@ async def admin_panel(message: Message, state: FSMContext):
         "Получение списка размеров: <code>/list_sizes</code>\n\n"
         
         "Число пользователей в боте: <code>/stat</code>\n"
-        "Отправить рассылку: <code>/send</code>"
+        "Отправить рассылку: <code>/send</code>\n"
+        "Список отложенных рассылок: <code>/scheduled</code>"
     )
     await message.answer(
         text=f"Список команд:\n\n{commands}"
