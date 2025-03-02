@@ -1,17 +1,24 @@
 import asyncio
 import logging
+import os
 from datetime import datetime
 
+import aiohttp
+import pandas as pd
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, FSInputFile
+from openpyxl.drawing.image import Image
+from openpyxl.workbook import Workbook
 
+from config import BOT_TOKEN
 from database.crud import create_category_obj, get_all_categories_obj, delete_category_obj, get_all_products, \
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
     delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj, \
     update_product_video_review_obj, get_single_product_obj, get_all_users_obj, count_all_users_obj, \
     save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post
+from database.models import Product
 from keyboards.callback_data import MailOptionCallback
 from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn, mail_options_btn
 from keyboards.reply_btns import remove_btn
@@ -410,3 +417,37 @@ async def delete_scheduled_post_command(message: Message):
         await message.answer(f"✅ Запланированный пост {post_id} удалён.")
     else:
         await message.answer(f"❌ Пост {post_id} не найден.")
+
+
+@router.message(IsAdmin(), Command('export'))
+async def export_products_command(message: Message):
+    products = Product.select()
+
+    data = []
+    for product in products:
+        file = await bot.get_file(product.photo)
+        photo_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file.file_path}" if product.photo else "Нет фото"
+
+        data.append({
+            "Название": product.name,
+            "Описание": product.description.replace("\n", " "),
+            "Фото (ссылка)": photo_url,
+            "Цена (₽)": product.price,
+            "Размер": product.size_id,
+            "Категория": product.category.name if product.category else "Без категории"
+        })
+
+    df = pd.DataFrame(data)
+
+    file_path = "products_export.xlsx"
+
+    df.to_excel(file_path, index=False)
+
+    await message.answer_document(FSInputFile(file_path), caption="📂 Экспорт товаров")
+
+    await asyncio.sleep(5)
+    try:
+        import os
+        os.remove(file_path)
+    except Exception as e:
+        print(f"Ошибка удаления файла: {e}")
