@@ -20,10 +20,13 @@ async def main():
     await set_bot_menu()
     dp.message.middleware.register(AuthMiddleware())
     dp.include_routers(*routers_list)
-    asyncio.create_task(check_scheduled_posts())
+    asyncio.ensure_future(check_scheduled_posts())
     await dp.start_polling(bot)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logging.info("🛑 Бот остановлен вручную")
