@@ -1,6 +1,8 @@
+import logging
 from datetime import datetime
 from typing import Dict, Any, List
 
+from loader import UTC_TZ
 from .models import db, Category, Product, ProductSize, TelegramUser, ScheduledPost
 from peewee import fn, DoesNotExist
 from playhouse.shortcuts import model_to_dict
@@ -228,17 +230,21 @@ async def get_product_dimension(product_id: int):
 
 
 async def save_scheduled_post(post_data: Dict[str, Any]):
-    """Save a scheduled post to the database."""
+    """Сохраняет запланированный пост в базу данных."""
     ScheduledPost.create(
         post_type=post_data["type"],
         content=post_data["content"],
+        file_id=post_data.get("file_id"),  # ✅ Теперь сохраняем медиа
         schedule_time=post_data["schedule_time"],
-        buttons=post_data["buttons"]
+        buttons=post_data.get("buttons")
     )
+
 
 async def get_scheduled_posts(now: datetime) -> List[Dict[str, Any]]:
     """Retrieve scheduled posts that need to be sent."""
-    return list(ScheduledPost.select().where(ScheduledPost.schedule_time <= now).dicts())
+    now_moscow = now.replace(microsecond=0)
+    posts = list(ScheduledPost.select().where(ScheduledPost.schedule_time <= now_moscow).dicts())
+    return posts
 
 async def delete_scheduled_post(post_id: int):
     """Delete a scheduled post after sending."""

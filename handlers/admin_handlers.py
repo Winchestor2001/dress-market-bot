@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 from datetime import datetime
@@ -374,23 +375,28 @@ async def scheduled_mail_message_state(message: Message, state: FSMContext):
 
     post_type = message.content_type
     if post_type not in ('text', 'photo', 'video', 'animation'):
-        return await message.answer("Неверный пост")
+        return await message.answer("❌ Неверный тип поста. Поддерживаются: текст, фото, видео, анимация.")
 
-    content = message.html_text
+    content = message.html_text if post_type == "text" else message.caption
     content = await format_content(content=content)
-    btn = await mail_btn(content['buttons'])
+
+    file_id = None
+    if post_type in ("photo", "video", "animation"):
+        file_id = message.photo[-1].file_id if post_type == "photo" else message.video.file_id if post_type == "video" else message.animation.file_id
 
     post_data = {
         "type": post_type,
-        "content": content,
+        "content": json.dumps(content, ensure_ascii=False),
+        "file_id": file_id,
         "schedule_time": schedule_time,
-        "buttons": btn
+        "buttons": json.dumps(content["buttons"], ensure_ascii=False) if content["buttons"] else None
     }
 
     await save_scheduled_post(post_data)
 
     await message.answer(f"✅ Пост запланирован на {schedule_time.strftime('%Y-%m-%d %H:%M UTC')} по МСК")
     await state.clear()
+
 
 
 @router.message(IsAdmin(), Command('scheduled'))

@@ -12,3 +12,4 @@ storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 db.create_tables([TelegramUser, Category,VideoReview, Product, ProductSize, ScheduledPost])
 MOSCOW_TZ = pytz.timezone("Europe/Moscow")
+UTC_TZ = pytz.utc

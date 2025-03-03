@@ -56,5 +56,6 @@ class Product(BaseModel):
 class ScheduledPost(BaseModel):
     post_type = CharField()
     content = TextField()
+    file_id = TextField()
     schedule_time = DateTimeField()
     buttons = TextField(null=True)
