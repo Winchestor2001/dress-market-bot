@@ -20,13 +20,15 @@ from database.crud import create_category_obj, get_all_categories_obj, delete_ca
     update_product_video_review_obj, get_single_product_obj, get_all_users_obj, count_all_users_obj, \
     save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post
 from database.models import Product
-from keyboards.callback_data import MailOptionCallback
-from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn, mail_options_btn
+from keyboards.callback_data import MailOptionCallback, ProductAddOptionCallback
+from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn, mail_options_btn, \
+    add_product_type_btn
 from keyboards.reply_btns import remove_btn
 from loader import bot, MOSCOW_TZ
 from states.management_states import ProductState, CategoryState, MailState
 from utils.admin_filter import IsAdmin
 from utils.content_formatter import format_content
+from utils.excel_parser import parse_products_from_excel, upload_photo_to_telegram
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -136,8 +138,54 @@ async def delete_product_command(message: Message):
 
 @router.message(IsAdmin(), Command('add_product'))
 async def add_product_command(message: Message, state: FSMContext):
-    await message.answer("Введите название продукта:", reply_markup=remove_btn)
-    await state.set_state(ProductState.waiting_for_name)
+    btn = await add_product_type_btn()
+    await message.answer("Выберите тип добавление:", reply_markup=btn)
+
+
+@router.callback_query(IsAdmin(), ProductAddOptionCallback.filter())
+async def add_product_callback(c: CallbackQuery, state: FSMContext):
+    is_import = int(c.data.split(":")[-1])
+    await c.message.delete()
+    if is_import:
+        await c.message.answer("Отправьте список продуктов в виде Excel:")
+        await state.set_state(ProductState.import_excel)
+    else:
+        await c.message.answer("Введите название продукта:", reply_markup=remove_btn)
+        await state.set_state(ProductState.waiting_for_name)
+
+
+@router.message(IsAdmin(), ProductState.import_excel, F.content_type.in_({'document'}))
+async def import_product_state(message: Message, state: FSMContext):
+    file_path = message.document.file_name
+    file = await message.bot.get_file(message.document.file_id)
+    await message.bot.download_file(file.file_path, file_path)
+
+    try:
+        products = await parse_products_from_excel(file_path)
+
+        for product in products:
+            logger.info(product)
+            photo_data = product.pop("photo", None)
+
+            if photo_data:
+                photo_id = await upload_photo_to_telegram(message.from_user.id, photo_data)
+            else:
+                photo_id = None
+
+            await create_product_obj(
+                name=product["name"],
+                description=product["description"],
+                price=product["price"],
+                category_id=product["category_id"],
+                size_id=product["size_id"],
+                video_review_id=None,
+                photo_id=photo_id,
+                dimension='.'
+            )
+
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 
 @router.message(ProductState.waiting_for_name)
@@ -382,7 +430,8 @@ async def scheduled_mail_message_state(message: Message, state: FSMContext):
 
     file_id = None
     if post_type in ("photo", "video", "animation"):
-        file_id = message.photo[-1].file_id if post_type == "photo" else message.video.file_id if post_type == "video" else message.animation.file_id
+        file_id = message.photo[
+            -1].file_id if post_type == "photo" else message.video.file_id if post_type == "video" else message.animation.file_id
 
     post_data = {
         "type": post_type,
@@ -396,7 +445,6 @@ async def scheduled_mail_message_state(message: Message, state: FSMContext):
 
     await message.answer(f"✅ Пост запланирован на {schedule_time.strftime('%Y-%m-%d %H:%M UTC')} по МСК")
     await state.clear()
-
 
 
 @router.message(IsAdmin(), Command('scheduled'))

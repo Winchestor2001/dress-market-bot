@@ -169,7 +169,7 @@ async def delete_product_by_id(product_ids: list):
 
 
 async def create_product_obj(name: str, description: str, price: float, category_id: str, size_id: str,
-                             video_review_id: str, photo_id: str, dimension: str):
+                             video_review_id: str | None, photo_id: str, dimension: str):
     size = ProductSize.get(ProductSize.id == size_id)
     product = Product.create(
         name=name,
@@ -246,9 +246,11 @@ async def get_scheduled_posts(now: datetime) -> List[Dict[str, Any]]:
     posts = list(ScheduledPost.select().where(ScheduledPost.schedule_time <= now_moscow).dicts())
     return posts
 
+
 async def delete_scheduled_post(post_id: int):
     """Delete a scheduled post after sending."""
     return ScheduledPost.delete().where(ScheduledPost.id == post_id).execute()
+
 
 async def get_all_scheduled_posts() -> List[Dict[str, Any]]:
     """Retrieve all scheduled posts."""
