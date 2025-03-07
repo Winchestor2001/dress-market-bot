@@ -18,17 +18,16 @@ from database.crud import create_category_obj, get_all_categories_obj, delete_ca
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
     delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj, \
     update_product_video_review_obj, get_single_product_obj, get_all_users_obj, count_all_users_obj, \
-    save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post
+    save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post, get_category_name_obj
 from database.models import Product
 from keyboards.callback_data import MailOptionCallback, ProductAddOptionCallback
 from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn, mail_options_btn, \
     add_product_type_btn
-from keyboards.reply_btns import remove_btn
+from keyboards.reply_btns import remove_btn, save_post_btn
 from loader import bot, MOSCOW_TZ
 from states.management_states import ProductState, CategoryState, MailState
 from utils.admin_filter import IsAdmin
-from utils.content_formatter import format_content
-from utils.excel_parser import parse_products_from_excel, upload_photo_to_telegram
+from utils.content_formatter import format_content, parse_text
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -138,76 +137,8 @@ async def delete_product_command(message: Message):
 
 @router.message(IsAdmin(), Command('add_product'))
 async def add_product_command(message: Message, state: FSMContext):
-    btn = await add_product_type_btn()
-    await message.answer("Выберите тип добавление:", reply_markup=btn)
-
-
-@router.callback_query(IsAdmin(), ProductAddOptionCallback.filter())
-async def add_product_callback(c: CallbackQuery, state: FSMContext):
-    is_import = int(c.data.split(":")[-1])
-    await c.message.delete()
-    if is_import:
-        await c.message.answer("Отправьте список продуктов в виде Excel:")
-        await state.set_state(ProductState.import_excel)
-    else:
-        await c.message.answer("Введите название продукта:", reply_markup=remove_btn)
-        await state.set_state(ProductState.waiting_for_name)
-
-
-@router.message(IsAdmin(), ProductState.import_excel, F.content_type.in_({'document'}))
-async def import_product_state(message: Message, state: FSMContext):
-    file_path = message.document.file_name
-    file = await message.bot.get_file(message.document.file_id)
-    await message.bot.download_file(file.file_path, file_path)
-
-    try:
-        products = await parse_products_from_excel(file_path)
-
-        for product in products:
-            logger.info(product)
-            photo_data = product.pop("photo", None)
-
-            if photo_data:
-                photo_id = await upload_photo_to_telegram(message.from_user.id, photo_data)
-            else:
-                photo_id = None
-
-            await create_product_obj(
-                name=product["name"],
-                description=product["description"],
-                price=product["price"],
-                category_id=product["category_id"],
-                size_id=product["size_id"],
-                video_review_id=None,
-                photo_id=photo_id,
-                dimension='.'
-            )
-
-    finally:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
-
-@router.message(ProductState.waiting_for_name)
-async def process_product_name(message: Message, state: FSMContext):
-    await state.update_data(name=message.text)
-    await message.answer("Введите описание продукта:")
-    await state.set_state(ProductState.waiting_for_description)
-
-
-@router.message(ProductState.waiting_for_description)
-async def process_product_description(message: Message, state: FSMContext):
-    await state.update_data(description=message.text)
-    await message.answer("Введите цену продукта:")
-    await state.set_state(ProductState.waiting_for_price)
-
-
-@router.message(ProductState.waiting_for_price, F.text)
-async def process_product_price(message: Message, state: FSMContext):
-    await state.update_data(price=message.text)
     categories = await get_all_categories_for_btn_obj()
     btn = await admin_categories_btn(categories)
-
     await message.answer(text="Выберите категорию:", reply_markup=btn)
     await state.set_state(ProductState.waiting_for_category)
 
@@ -216,48 +147,36 @@ async def process_product_price(message: Message, state: FSMContext):
 async def product_category_state(c: CallbackQuery, state: FSMContext):
     category_id = c.data.split(":")[1]
     await state.update_data(category_id=category_id)
-    await c.answer(f"Вы выбрали категорию с ID {category_id}.", show_alert=True)
+    category_name = await get_category_name_obj(category_id=int(category_id))
+    await c.message.edit_text(f"Вы выбрали категорию {category_name}.")
 
-    sizes = await get_all_sizes_for_btn_obj()
-    btn = await admin_sizes_btn(sizes)
-    await c.message.edit_text(text="Выберите размер", reply_markup=btn)
-    await state.set_state(ProductState.waiting_for_size)
-
-
-@router.callback_query(ProductState.waiting_for_size, F.data.startswith('select_size:'))
-async def product_size_state(c: CallbackQuery, state: FSMContext):
-    size_id = c.data.split(":")[1]
-    await state.update_data(size_id=size_id)
-    await c.answer(f"Вы выбрали размер с ID {size_id}.", show_alert=True)
-
-    await c.message.edit_text("Отправьте видеообзор:")
-    await state.set_state(ProductState.waiting_for_video_review)
+    btn = await save_post_btn()
+    await c.message.answer("Отправте пост продукта:", reply_markup=btn)
+    await state.set_state(ProductState.post)
 
 
-@router.message(ProductState.waiting_for_video_review, F.content_type.in_({'video', 'text'}))
-async def product_video_review_state(message: Message, state: FSMContext):
-    if message.text and message.text == '.':
-        video_review_id = None
-    else:
-        video_review_id = message.video.file_id
-    data = await state.get_data()
-    if data.get("product_id", False):
-        await state.update_data(video_review_id=video_review_id)
-        result = await update_product_video_review_obj(data['product_id'], video_review_id)
-        await message.answer(text=result)
+@router.message(ProductState.post)
+async def product_post_state(message: Message, state: FSMContext):
+    if message.content_type == "photo" and message.caption:
+        data = await state.get_data()
+        context = await parse_text(message.caption)
+        photo_id = message.photo[-1].file_id
+        await create_product_obj(
+            name=context.get("name"),
+            description=context.get("description"),
+            price=context.get("price"),
+            size_id=context.get("size"),
+            photo_id=photo_id,
+            dimension='.',
+            category_id=data.get("category_id")
+        )
+        logger.info(context)
+        await message.answer("✅️️️️️️️ Добавлен")
+    elif message.text == "✅️️️️️️️ Готово":
+        await message.answer("✅️️️️️️️ Сохранение завершено!", reply_markup=remove_btn)
         await state.clear()
-        return
     else:
-        await state.update_data(video_review_id=video_review_id)
-    await message.answer("Отправьте фото продукта:")
-    await state.set_state(ProductState.waiting_for_photo)
-
-
-@router.message(ProductState.waiting_for_photo, F.content_type.in_({'photo'}))
-async def product_photo_state(message: Message, state: FSMContext):
-    await state.update_data(photo_id=message.photo[-1].file_id)
-    await message.answer("Отправьте текст для замеры:")
-    await state.set_state(ProductState.waiting_for_dimension)
+        await message.answer("Проверьте пост и попродуйте заного отправить!")
 
 
 @router.message(ProductState.waiting_for_dimension)

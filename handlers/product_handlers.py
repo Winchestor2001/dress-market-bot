@@ -1,8 +1,7 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
-from unicodedata import category
-
+import logging
 from database.crud import get_all_categories_for_btn_obj, is_category_name_exists, get_all_sizes_for_btn_obj, \
     is_size_name_exists, get_filtered_products, get_product_video_review, get_product_dimension
 from keyboards.callback_data import ProductCallback
@@ -11,6 +10,7 @@ from keyboards.reply_btns import select_items_list_btn
 from states.user_states import UserMarketState
 
 router = Router()
+logger = logging.getLogger(__name__)
 
 
 @router.message(F.text == "📦 Каталог товаров")
@@ -80,5 +80,3 @@ async def product_callback(c: CallbackQuery, state: FSMContext):
             await c.message.reply_photo(photo=dimension_photo, caption=dimension)
         else:
             await c.message.reply_text(text=dimension)
-
-
