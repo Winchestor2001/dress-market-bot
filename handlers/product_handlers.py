@@ -55,7 +55,7 @@ async def size_handler(message: Message, state: FSMContext):
                 f"📏 <b>Размер:</b> {item['size_id']}\n"
                 f"📂 <b>Категория:</b> {item['category']}\n"
             )
-            btn = await product_btn(item['id'])
+            btn = await product_btn(item['id'], item['contact'])
             await message.answer_photo(
                 photo=item['photo'],
                 caption=product_text,

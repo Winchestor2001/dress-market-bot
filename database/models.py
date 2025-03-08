@@ -45,6 +45,7 @@ class Product(BaseModel):
     price = CharField()
     photo = CharField()
     size_id = CharField()
+    contact = CharField()
     dimension = CharField()
     video_review = CharField(null=True)
     category = ForeignKeyField(Category, null=True, backref='products', on_delete='SET NULL')
