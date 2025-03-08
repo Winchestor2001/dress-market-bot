@@ -53,7 +53,7 @@ async def product_btn(product_id: int, contact: str):
             callback_data=ProductCallback(action="dimension", item_id=product_id).pack()
         ),
         InlineKeyboardButton(
-            text="👤 Продавец",
+            text="💸 Купить",
             url=contact
         ),
     )
