@@ -41,7 +41,7 @@ async def admin_sizes_btn(sizes):
     return btn.as_markup()
 
 
-async def product_btn(product_id: int):
+async def product_btn(product_id: int, contact: str):
     btn = InlineKeyboardBuilder()
     btn.add(
         InlineKeyboardButton(
@@ -51,6 +51,10 @@ async def product_btn(product_id: int):
         InlineKeyboardButton(
             text="📏 Замеры",
             callback_data=ProductCallback(action="dimension", item_id=product_id).pack()
+        ),
+        InlineKeyboardButton(
+            text="👤 Продавец",
+            url=contact
         ),
     )
     btn.adjust(2)

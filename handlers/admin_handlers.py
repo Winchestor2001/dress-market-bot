@@ -1,28 +1,23 @@
 import asyncio
 import json
 import logging
-import os
 from datetime import datetime
 
-import aiohttp
 import pandas as pd
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile
-from openpyxl.drawing.image import Image
-from openpyxl.workbook import Workbook
 
 from config import BOT_TOKEN
 from database.crud import create_category_obj, get_all_categories_obj, delete_category_obj, get_all_products, \
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
-    delete_size_obj, get_all_sizes_for_btn_obj, get_single_category_obj, update_category_dimension_obj, \
-    update_product_video_review_obj, get_single_product_obj, get_all_users_obj, count_all_users_obj, \
+    delete_size_obj, get_single_category_obj, update_category_dimension_obj, \
+    get_single_product_obj, get_all_users_obj, count_all_users_obj, \
     save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post, get_category_name_obj
 from database.models import Product
-from keyboards.callback_data import MailOptionCallback, ProductAddOptionCallback
-from keyboards.inline_btns import admin_categories_btn, admin_sizes_btn, mail_btn, mail_options_btn, \
-    add_product_type_btn
+from keyboards.callback_data import MailOptionCallback
+from keyboards.inline_btns import admin_categories_btn, mail_btn, mail_options_btn
 from keyboards.reply_btns import remove_btn, save_post_btn
 from loader import bot, MOSCOW_TZ
 from states.management_states import ProductState, CategoryState, MailState
@@ -168,9 +163,9 @@ async def product_post_state(message: Message, state: FSMContext):
             size_id=context.get("size"),
             photo_id=photo_id,
             dimension='.',
-            category_id=data.get("category_id")
+            category_id=data.get("category_id"),
+            contact=context.get("contact").replace("@", "t.me/") if context.get("contact") else None,
         )
-        logger.info(context)
         await message.answer("✅️️️️️️️ Добавлен")
     elif message.text == "✅️️️️️️️ Готово":
         await message.answer("✅️️️️️️️ Сохранение завершено!", reply_markup=remove_btn)
@@ -179,21 +174,21 @@ async def product_post_state(message: Message, state: FSMContext):
         await message.answer("Проверьте пост и попродуйте заного отправить!")
 
 
-@router.message(ProductState.waiting_for_dimension)
-async def product_dimension_state(message: Message, state: FSMContext):
-    data = await state.get_data()
-    name = data.get('name')
-    description = data.get('description')
-    price = data.get('price')
-    category_id = data.get('category_id')
-    size_id = data.get('size_id')
-    photo_id = data.get('photo_id')
-    video_review_id = data.get('video_review_id')
-    dimension = message.text
-
-    await create_product_obj(name, description, price, category_id, size_id, video_review_id, photo_id, dimension)
-    await message.answer("✅ Продукт успешно добавлен!")
-    await state.clear()
+# @router.message(ProductState.waiting_for_dimension)
+# async def product_dimension_state(message: Message, state: FSMContext):
+#     data = await state.get_data()
+#     name = data.get('name')
+#     description = data.get('description')
+#     price = data.get('price')
+#     category_id = data.get('category_id')
+#     size_id = data.get('size_id')
+#     photo_id = data.get('photo_id')
+#     video_review_id = data.get('video_review_id')
+#     dimension = message.text
+#
+#     await create_product_obj(name, description, price, category_id, size_id, video_review_id, photo_id, dimension)
+#     await message.answer("✅ Продукт успешно добавлен!")
+#     await state.clear()
 
 
 @router.message(IsAdmin(), Command('add_size'))

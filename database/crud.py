@@ -176,7 +176,7 @@ async def delete_product_by_id(product_ids: list):
 
 
 async def create_product_obj(name: str, description: str, price: float, category_id: str, size_id: str,
-                             photo_id: str, dimension: str, video_review_id: str = None):
+                             photo_id: str, dimension: str, contact: str | None, video_review_id: str = None):
     # size = ProductSize.get(ProductSize.id == size_id)
     product = Product.create(
         name=name,
@@ -186,7 +186,8 @@ async def create_product_obj(name: str, description: str, price: float, category
         size_id=size_id,
         video_review=video_review_id,
         photo=photo_id,
-        dimension=dimension
+        dimension=dimension,
+        contact=contact
     )
     return product
 
@@ -211,7 +212,8 @@ async def get_filtered_products(category_name: str, size_name: str):
                 "price": product.price,
                 "photo": product.photo,
                 "category": product.category.name,
-                "size_id": product.size_id
+                "size_id": product.size_id,
+                "contact": product.contact
             }
             for product in query
         ]
