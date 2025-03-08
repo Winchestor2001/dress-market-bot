@@ -7,6 +7,8 @@ from .models import db, Category, Product, ProductSize, TelegramUser, ScheduledP
 from peewee import fn, DoesNotExist
 from playhouse.shortcuts import model_to_dict
 
+logger = logging.getLogger(__name__)
+
 
 async def create_user_obj(telegram_id: int, username: str = None):
     user = TelegramUser.get_or_none(telegram_id=telegram_id)
@@ -34,6 +36,11 @@ async def create_size_obj(name: str):
     size = ProductSize.create(name=name)
     return (f"✅ Размер '{size.name}' успешно добавлена с ID {size.id}!\n\n"
             f"Чтобы посмотреть список категории напишите команду /list_sizes")
+
+
+async def get_category_name_obj(category_id: int):
+    category = Category.select().where(Category.id == category_id)
+    return [model_to_dict(c) for c in category][0]['name']
 
 
 async def get_all_categories_obj():
@@ -169,14 +176,14 @@ async def delete_product_by_id(product_ids: list):
 
 
 async def create_product_obj(name: str, description: str, price: float, category_id: str, size_id: str,
-                             video_review_id: str, photo_id: str, dimension: str):
-    size = ProductSize.get(ProductSize.id == size_id)
+                             photo_id: str, dimension: str, video_review_id: str = None):
+    # size = ProductSize.get(ProductSize.id == size_id)
     product = Product.create(
         name=name,
         description=description,
         price=price,
         category=category_id,
-        size_id=size.name,
+        size_id=size_id,
         video_review=video_review_id,
         photo=photo_id,
         dimension=dimension
@@ -187,7 +194,6 @@ async def create_product_obj(name: str, description: str, price: float, category
 async def get_filtered_products(category_name: str, size_name: str):
     category = Category.get(Category.name == category_name)
     size = ProductSize.get(ProductSize.name == size_name)
-
     query = (
         Product
         .select()
@@ -196,7 +202,6 @@ async def get_filtered_products(category_name: str, size_name: str):
             (Product.size_id == size.name)
         )
     )
-
     if query.exists():
         products = [
             {
@@ -246,9 +251,11 @@ async def get_scheduled_posts(now: datetime) -> List[Dict[str, Any]]:
     posts = list(ScheduledPost.select().where(ScheduledPost.schedule_time <= now_moscow).dicts())
     return posts
 
+
 async def delete_scheduled_post(post_id: int):
     """Delete a scheduled post after sending."""
     return ScheduledPost.delete().where(ScheduledPost.id == post_id).execute()
+
 
 async def get_all_scheduled_posts() -> List[Dict[str, Any]]:
     """Retrieve all scheduled posts."""

@@ -8,3 +8,7 @@ class ProductCallback(CallbackData, prefix='product'):
 
 class MailOptionCallback(CallbackData, prefix='mail_option'):
     schedule: bool
+
+
+class ProductAddOptionCallback(CallbackData, prefix='product_add_option'):
+    import_product: bool

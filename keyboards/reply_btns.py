@@ -27,3 +27,11 @@ async def select_items_list_btn(list_data: list):
     )
     btn.adjust(2)
     return btn.as_markup(resize_keyboard=True)
+
+
+async def save_post_btn():
+    btn = ReplyKeyboardBuilder()
+    btn.row(
+        KeyboardButton(text="✅️️️️️️️ Готово"),
+    )
+    return btn.as_markup(resize_keyboard=True)

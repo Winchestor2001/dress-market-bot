@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
-from keyboards.callback_data import ProductCallback, MailOptionCallback
+from keyboards.callback_data import ProductCallback, MailOptionCallback, ProductAddOptionCallback
 
 
 async def support_btn():
@@ -54,6 +54,22 @@ async def product_btn(product_id: int):
         ),
     )
     btn.adjust(2)
+    return btn.as_markup()
+
+
+async def add_product_type_btn():
+    btn = InlineKeyboardBuilder()
+    btn.add(
+        InlineKeyboardButton(
+            text="Ручной",
+            callback_data=ProductAddOptionCallback(import_product=False).pack()
+        ),
+        InlineKeyboardButton(
+            text="Импортировать",
+            callback_data=ProductAddOptionCallback(import_product=True).pack()
+        ),
+    )
+    btn.adjust(1)
     return btn.as_markup()
 
 
