@@ -44,7 +44,7 @@ async def get_category_name_obj(category_id: int):
 
 
 async def get_all_categories_obj():
-    categories = Category.select().order_by(Category.name)
+    categories = Category.select().order_by(Category.id)
     if categories.exists():
         category_list = "\n".join([
             f"🔹 {category.name} = ID <code>{category.id}</code> = Замеры: {'Есть' if category.dimension_photo else 'Нет'}"
@@ -55,7 +55,7 @@ async def get_all_categories_obj():
 
 
 async def get_all_sizes_obj():
-    sizes = ProductSize.select().order_by(ProductSize.name)
+    sizes = ProductSize.select().order_by(ProductSize.id)
     if sizes.exists():
         size_list = "\n".join([f"🔹 {size.name} = ID <code>{size.id}</code>" for size in sizes])
         return f"📋 Список размеров:\n\n{size_list}"
@@ -151,7 +151,7 @@ async def update_product_video_review_obj(product_id: int, video_review):
 
 
 async def get_all_products():
-    products = Product.select().order_by(Product.name)
+    products = Product.select().order_by(Product.id)
     if products.exists():
         product_list = "\n".join([
             f"🔹 {product.name} = ID <code>{product.id}</code> = {product.price} RUB"
