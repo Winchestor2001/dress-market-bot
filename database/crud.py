@@ -87,10 +87,11 @@ async def get_all_sizes_for_btn_obj():
 
         # Define the desired order for sizes
         size_order = {
-            'S/M': 0,
+            'S': 0,
+            'M': 0,
             'L': 1,
             'XL': 2,
-            'XXL+': 3,
+            '3XL': 3,
         }
 
         # Sort sizes using the defined order
