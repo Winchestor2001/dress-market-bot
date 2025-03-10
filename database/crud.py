@@ -141,7 +141,7 @@ async def update_category_dimension_obj(category_name: str, dimension_photo):
         return "❌ Категория с таким ID не найдена."
 
 
-async def update_product_video_review_obj(product_id: int, video_review):
+async def update_product_video_review_obj(product_id: int, video_review: str):
     product = Product.get_or_none(Product.id == product_id)
     if product:
         product.video_review = video_review

@@ -14,7 +14,8 @@ from database.crud import create_category_obj, get_all_categories_obj, delete_ca
     delete_product_by_id, get_all_categories_for_btn_obj, create_product_obj, create_size_obj, get_all_sizes_obj, \
     delete_size_obj, get_single_category_obj, update_category_dimension_obj, \
     get_single_product_obj, get_all_users_obj, count_all_users_obj, \
-    save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post, get_category_name_obj
+    save_scheduled_post, get_all_scheduled_posts, delete_scheduled_post, get_category_name_obj, \
+    update_product_video_review_obj
 from database.models import Product
 from keyboards.callback_data import MailOptionCallback
 from keyboards.inline_btns import admin_categories_btn, mail_btn, mail_options_btn
@@ -148,6 +149,15 @@ async def product_category_state(c: CallbackQuery, state: FSMContext):
     btn = await save_post_btn()
     await c.message.answer("Отправте пост продукта:", reply_markup=btn)
     await state.set_state(ProductState.post)
+
+
+@router.message(ProductState.waiting_for_video_review, F.content_type.in_({'video'}))
+async def product_video_review_state(message: Message, state: FSMContext):
+    data = await state.get_data()
+    video_review_id = message.video.file_id
+    context = await update_product_video_review_obj(product_id=data['product_id'], video_review=video_review_id)
+    await message.answer(text=context)
+    await state.clear()
 
 
 @router.message(ProductState.post)
