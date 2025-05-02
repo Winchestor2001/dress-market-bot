@@ -16,7 +16,7 @@ class SubscriptionMiddleware(BaseMiddleware):
                 keyboard = await subscribe_channel_btn(channels)
 
                 await event.answer(
-                    "Подпишитесь на наш канал 👇",
+                    "Подпишитесь на наши каналы 👇",
                     reply_markup=keyboard
                 )
                 return  # Stop processing further handlers if not subscribed

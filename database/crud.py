@@ -2,10 +2,10 @@ import logging
 from datetime import datetime
 from typing import Dict, Any, List
 
-from loader import UTC_TZ
-from .models import db, Category, Product, ProductSize, TelegramUser, ScheduledPost
-from peewee import fn, DoesNotExist
-from playhouse.shortcuts import model_to_dict
+from webapp.web_server import get_photo_url
+from .models import Category, Product, ProductSize, TelegramUser, ScheduledPost
+from peewee import DoesNotExist
+from playhouse.shortcuts import model_to_dict  # noqa
 
 logger = logging.getLogger(__name__)
 
@@ -161,6 +161,22 @@ async def get_all_products():
         return f"📋 Список продуктов:\n\n{product_list}"
     else:
         return "❌ Продукты пока не добавлены."
+
+
+async def get_all_products_for_webapp():
+    products = Product.select().order_by(Product.id)
+    if not products.exists():
+        return []
+
+    result = []
+    for product in products:
+        product_dict = model_to_dict(product)
+        file_id = product_dict.get("photo")
+        if file_id:
+            product_dict["photo"] = await get_photo_url(file_id)
+        result.append(product_dict)
+
+    return result
 
 
 async def delete_product_by_id(product_ids: list):
