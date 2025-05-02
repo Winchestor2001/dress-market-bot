@@ -10,6 +10,7 @@ from middleware.auth import AuthMiddleware
 from middleware.subscription import SubscriptionMiddleware
 from utils.schedule_module import check_scheduled_posts
 from webapp.web_server import handle_get_products, cors_middleware
+from webapp import webapp_handlers
 
 
 async def set_bot_menu():
