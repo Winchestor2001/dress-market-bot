@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from datetime import datetime
 from typing import Dict, Any, List
@@ -168,15 +169,14 @@ async def get_all_products_for_webapp():
     if not products.exists():
         return []
 
-    result = []
-    for product in products:
-        product_dict = model_to_dict(product)
-        file_id = product_dict.get("photo")
-        if file_id:
-            product_dict["photo"] = await get_photo_url(file_id)
-        result.append(product_dict)
+    product_dicts = [model_to_dict(p) for p in products]
 
-    return result
+    async def enrich(product):
+        if product.get("photo"):
+            product["photo"] = await get_photo_url(product["photo"])
+        return product
+
+    return await asyncio.gather(*(enrich(p) for p in product_dicts))
 
 
 async def delete_product_by_id(product_ids: list):
