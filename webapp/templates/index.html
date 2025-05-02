@@ -52,10 +52,12 @@
 </head>
 <body>
 <h2>Продукты</h2>
+<p id="product-count">Всего: ...</p>
 <div id="product-list">Загрузка...</div>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
+    const countElement = document.getElementById('product-count');
     const tg = window.Telegram.WebApp;
     tg.expand();
 
@@ -75,18 +77,20 @@
     function renderProducts(products) {
         container.innerHTML = ''; // Очистка
 
+        countElement.textContent = `Всего: ${products.length}`;
+
         products.forEach(product => {
             const div = document.createElement('div');
             div.className = 'product';
 
             div.innerHTML = `
-      <img src="${product.photo}" />
-      <div class="product-title">
-        <strong>${product.name}</strong><br/>
-        <small>${product.description || ''}</small>
-      </div>
-      <button onclick="confirmDelete(${product.id}, '${product.name}')">Удалить</button>
-    `;
+            <img src="${product.photo}" />
+            <div class="product-title">
+                <strong>${product.name}</strong><br/>
+                <small>${product.description || ''}</small>
+            </div>
+            <button onclick="confirmDelete(${product.id}, '${product.name}')">Удалить</button>
+        `;
 
             container.appendChild(div);
         });

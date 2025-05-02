@@ -4,6 +4,8 @@ import logging
 from aiogram import Router, F
 from aiogram.types import Message
 
+from database.crud import delete_product_by_id
+
 router = Router()
 logger = logging.getLogger(__name__)
 
@@ -13,7 +15,7 @@ async def handle_webapp_data(message: Message):
         data = json.loads(message.web_app_data.data)
         if data.get("action") == "delete_product":
             product_id = data["id"]
-            # await delete_product_from_db(product_id)
-            await message.answer(f"Продукт с ID {product_id} успешно удалён ✅")
+            context = await delete_product_by_id(product_id)
+            await message.answer(context)
     except Exception as e:
         await message.answer(f"Ошибка при удалении: {str(e)}")
