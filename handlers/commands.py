@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from keyboards.inline_btns import subscribe_channel_btn
+from keyboards.inline_btns import subscribe_channel_btn, admin_command_btn
 from keyboards.reply_btns import start_menu_btn
 from utils.admin_filter import IsAdmin
 from utils.is_subscribed import is_subscribed
@@ -46,8 +46,10 @@ async def admin_panel(message: Message, state: FSMContext):
         "Список отложенных рассылок: <code>/scheduled</code>\n"
         "Экспортировать список товаров: <code>/export</code>"
     )
+    btn = await admin_command_btn()
     await message.answer(
-        text=f"Список команд:\n\n{commands}"
+        text=f"Список команд:\n\n{commands}",
+        reply_markup=btn
     )
 
 
