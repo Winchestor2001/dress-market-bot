@@ -93,3 +93,20 @@ async def mail_btn(buttons: list):
     )
     btn.adjust(1)
     return btn.as_markup()
+
+
+async def subscribe_channel_btn(channels):
+    buttons = [
+        InlineKeyboardButton(
+            text=f"{channel['name']}",
+            url=channel['link']
+        ) for channel in channels
+    ]
+    buttons.append(InlineKeyboardButton(
+        text="Готово ✅",
+        callback_data="check_subscribed"
+    ))
+    keyboard = InlineKeyboardBuilder()
+    keyboard.add(*buttons)
+    keyboard.adjust(1)
+    return keyboard.as_markup()
