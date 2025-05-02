@@ -14,8 +14,8 @@ async def handle_webapp_data(message: Message):
     try:
         data = json.loads(message.web_app_data.data)
         if data.get("action") == "delete_product":
-            product_id = data["id"]
-            context = await delete_product_by_id([product_id])
+            product_ids = data["ids"]
+            context = await delete_product_by_id(product_ids)
             await message.answer(context)
     except Exception as e:
         await message.answer(f"Ошибка при удалении: {str(e)}")
