@@ -1,4 +1,3 @@
-from aiogram.types import WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 
 from keyboards.callback_data import ProductCallback, MailOptionCallback, ProductAddOptionCallback
@@ -91,15 +90,6 @@ async def mail_btn(buttons: list):
     btn = InlineKeyboardBuilder()
     btn.add(
         *[InlineKeyboardButton(text=item['text'], url=item['link']) for item in buttons]
-    )
-    btn.adjust(1)
-    return btn.as_markup()
-
-
-async def admin_command_btn():
-    btn = InlineKeyboardBuilder()
-    btn.add(
-        InlineKeyboardButton(text="Удалить продуктов", web_app=WebAppInfo(url="https://zesty-monstera-41fa24.netlify.app"))
     )
     btn.adjust(1)
     return btn.as_markup()

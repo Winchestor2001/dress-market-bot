@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardRemove
+from aiogram.types import ReplyKeyboardRemove, WebAppInfo
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton
 
 remove_btn = ReplyKeyboardRemove()
@@ -35,3 +35,12 @@ async def save_post_btn():
         KeyboardButton(text="✅️️️️️️️ Готово"),
     )
     return btn.as_markup(resize_keyboard=True)
+
+
+async def admin_command_btn():
+    btn = ReplyKeyboardBuilder()
+    btn.add(
+        KeyboardButton(text="Удалить продуктов", web_app=WebAppInfo(url="https://zesty-monstera-41fa24.netlify.app"))
+    )
+    btn.adjust(1)
+    return btn.as_markup()

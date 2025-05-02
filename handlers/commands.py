@@ -3,8 +3,8 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from keyboards.inline_btns import subscribe_channel_btn, admin_command_btn
-from keyboards.reply_btns import start_menu_btn
+from keyboards.inline_btns import subscribe_channel_btn
+from keyboards.reply_btns import start_menu_btn, admin_command_btn
 from utils.admin_filter import IsAdmin
 from utils.is_subscribed import is_subscribed
 

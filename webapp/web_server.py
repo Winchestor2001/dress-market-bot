@@ -43,5 +43,4 @@ async def handle_get_products(request):
     from database.crud import get_all_products_for_webapp
 
     products = await get_all_products_for_webapp()
-    print(products)
     return web.Response(text=json.dumps(products), content_type="application/json")
