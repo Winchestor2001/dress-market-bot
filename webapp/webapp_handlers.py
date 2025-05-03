@@ -2,6 +2,7 @@ import json
 import logging
 
 from aiogram import Router, F
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from database.crud import delete_product_by_id
@@ -10,7 +11,8 @@ router = Router()
 logger = logging.getLogger(__name__)
 
 @router.message(F.web_app_data)
-async def handle_webapp_data(message: Message):
+async def handle_webapp_data(message: Message, state: FSMContext):
+    await state.clear()
     try:
         data = json.loads(message.web_app_data.data)
         if data.get("action") == "delete_products":
