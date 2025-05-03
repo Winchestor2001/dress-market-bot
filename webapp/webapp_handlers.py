@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 async def handle_webapp_data(message: Message):
     try:
         data = json.loads(message.web_app_data.data)
-        if data.get("action") == "delete_product":
+        if data.get("action") == "delete_products":
             product_ids = data["ids"]
             context = await delete_product_by_id(product_ids)
             await message.answer(context)
