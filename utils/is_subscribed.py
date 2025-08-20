@@ -9,7 +9,7 @@ async def is_subscribed(user_id):
         {
             "id": -1001928126577,
             "name": "TIME2BUY",
-            "link": "https://t.me/time22buy"
+            "link": "https://t.me/time222buy"
         },
         {
             "id": -1001721323404,
