@@ -44,3 +44,12 @@ async def admin_command_btn():
     )
     btn.adjust(1)
     return btn.as_markup(resize_keyboard=True)
+
+
+async def admin_catalog_btn():
+    btn = ReplyKeyboardBuilder()
+    btn.add(
+        KeyboardButton(text="Каталог", web_app=WebAppInfo(url="https://casual-store.netlify.app"))
+    )
+    btn.adjust(1)
+    return btn.as_markup(resize_keyboard=True)

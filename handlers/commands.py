@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from keyboards.inline_btns import subscribe_channel_btn
-from keyboards.reply_btns import start_menu_btn, admin_command_btn
+from keyboards.reply_btns import start_menu_btn, admin_command_btn, admin_catalog_btn
 from utils.admin_filter import IsAdmin
 from utils.is_subscribed import is_subscribed
 
@@ -51,6 +51,12 @@ async def admin_panel(message: Message, state: FSMContext):
         text=f"Список команд:\n\n{commands}",
         reply_markup=btn
     )
+
+
+@router.message(IsAdmin(), Command('catalog'))
+async def catalog_webapp(message: Message, state: FSMContext):
+    btn = await admin_catalog_btn()
+    await message.answer(text="Переход на веб-приложение", reply_markup=btn)
 
 
 @router.message(Command("cancel"))
