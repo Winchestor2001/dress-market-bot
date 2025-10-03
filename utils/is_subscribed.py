@@ -15,16 +15,6 @@ async def is_subscribed(user_id):
             "id": -1001721323404,
             "name": "CASUAL STORE BY PEH",
             "link": "https://t.me/casualstorebypeh"
-        },
-        {
-            "id": -1008306338459,
-            "name": "TIME2BUY NEW BOT",
-            "link": "https://t.me/TIME2BUY_CATALOG_bot"
-        },
-        {
-            "id": -1008066785721,
-            "name": "CASUAL STORE BY PEH NEW BOT",
-            "link": "https://t.me/CSBP_CATALOG_bot"
         }
     ]
     not_subscribed_channels = []
@@ -40,5 +30,18 @@ async def is_subscribed(user_id):
         except TelegramAPIError as e:
             text = f"Ошибка при проверке подписки на канал {channel['name']}({channel['link']}): {e}"
             logging.info(text)
-
+    not_subscribed_channels.append(
+        {
+            "id": -1008306338459,
+            "name": "TIME2BUY NEW BOT",
+            "link": "https://t.me/TIME2BUY_CATALOG_bot"
+        }
+    )
+    not_subscribed_channels.append(
+        {
+            "id": -1008066785721,
+            "name": "CASUAL STORE BY PEH NEW BOT",
+            "link": "https://t.me/CSBP_CATALOG_bot"
+        }
+    )
     return not_subscribed_channels
