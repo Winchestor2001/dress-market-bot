@@ -40,7 +40,7 @@ async def save_post_btn():
 async def admin_command_btn():
     btn = ReplyKeyboardBuilder()
     btn.add(
-        KeyboardButton(text="Удалить продуктов", web_app=WebAppInfo(url="https://zesty-monstera-41fa24.netlify.app"))
+        KeyboardButton(text="Удалить продуктов", web_app=WebAppInfo(url="https://dashing-stroopwafel-66bd81.netlify.app"))
     )
     btn.adjust(1)
     return btn.as_markup(resize_keyboard=True)
