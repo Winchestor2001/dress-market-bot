@@ -10,11 +10,6 @@ async def is_subscribed(user_id):
             "id": -1001928126577,
             "name": "TIME2BUY",
             "link": "https://t.me/+Vh1Xlj4yP7o1MmUy"
-        },
-        {
-            "id": -1001721323404,
-            "name": "CASUAL STORE BY PEH",
-            "link": "https://t.me/casualstorebypeh"
         }
     ]
     not_subscribed_channels = []
