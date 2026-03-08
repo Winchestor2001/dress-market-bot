@@ -6,8 +6,7 @@ from keyboards.callback_data import ProductCallback, MailOptionCallback, Product
 async def support_btn():
     btn = InlineKeyboardBuilder()
     btn.add(
-        InlineKeyboardButton(text="👤 steroidik", url="https://t.me/steroidik"),
-        InlineKeyboardButton(text="👤 pppeeexxx", url="https://t.me/pppeeexxx"),
+        InlineKeyboardButton(text="👤 steroidik", url="https://t.me/steroidik")
     )
     btn.adjust(1)
     return btn.as_markup()
