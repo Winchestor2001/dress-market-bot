@@ -57,11 +57,18 @@ async def size_handler(message: Message, state: FSMContext):
                 f"#{item['id']}"
             )
             btn = await product_btn(item['id'], item['contact'])
-            await message.answer_photo(
-                photo=item['photo'],
-                caption=product_text,
-                reply_markup=btn
-            )
+            try:
+                await message.answer_photo(
+                    photo=item['photo'],
+                    caption=product_text,
+                    reply_markup=btn
+                )
+            except Exception as e:
+                logger.error(f"Ошибка отправки фото для продукта #{item['id']}: {e}")
+                await message.answer(
+                    text=product_text + "\n\n⚠️ Фото недоступно",
+                    reply_markup=btn
+                )
 
 
 @router.callback_query(ProductCallback.filter())
@@ -78,6 +85,10 @@ async def product_callback(c: CallbackQuery, state: FSMContext):
         await c.answer()
         dimension, dimension_photo = await get_product_dimension(product_id=int(item_id))
         if dimension_photo:
-            await c.message.reply_photo(photo=dimension_photo, caption=dimension)
+            try:
+                await c.message.reply_photo(photo=dimension_photo, caption=dimension)
+            except Exception as e:
+                logger.error(f"Ошибка отправки dimension фото для продукта #{item_id}: {e}")
+                await c.message.reply(text=dimension + "\n\n⚠️ Фото недоступно")
         else:
             await c.message.reply_text(text=dimension)
