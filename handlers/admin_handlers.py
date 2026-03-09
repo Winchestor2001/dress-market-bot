@@ -172,7 +172,7 @@ async def product_post_state(message: Message, state: FSMContext):
             price=context.get("price"),
             size_id=context.get("size"),
             photo_id=photo_id,
-            dimension='.',
+            dimension=context.get("dimension") or '.',
             category_id=data.get("category_id"),
             contact=context.get("contact").replace("@", "t.me/") if context.get("contact") else None,
         )

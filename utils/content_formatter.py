@@ -18,6 +18,7 @@ async def parse_text(text):
     description_match = re.search(r'Состояние:\s*([\s\S]+?)\nЦена:', text)
     price_match = re.search(r'Цена:\s*[^\d]*([\d,.]+)', text)
     buy_match = re.search(r'Купить(?:\W+)?-?\s*(?:@\w+|https?://\S+)', text)
+    dimension_match = re.search(r'Замеры:\s*([\s\S]+?)(?=Состояние:)', text)
 
     description = description_match.group(1).strip() if description_match else None
     if description:
@@ -29,10 +30,13 @@ async def parse_text(text):
 
     contact = buy_match.group(0).split()[-1] if buy_match else None
 
+    dimension = dimension_match.group(1).strip() if dimension_match else None
+
     return {
         "name": name_match.group(1).strip() if name_match else None,
         "size": size,
         "description": description,
         "price": price_match.group(1).replace(',', '.') if price_match else None,
-        "contact": contact
+        "contact": contact,
+        "dimension": dimension
     }
