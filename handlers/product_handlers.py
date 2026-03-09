@@ -89,6 +89,6 @@ async def product_callback(c: CallbackQuery, state: FSMContext):
                 await c.message.reply_photo(photo=dimension_photo, caption=dimension)
             except Exception as e:
                 logger.error(f"Ошибка отправки dimension фото для продукта #{item_id}: {e}")
-                await c.message.reply(text=dimension + "\n\n⚠️ Фото недоступно")
+                await c.message.reply(text=dimension)
         else:
             await c.message.reply_text(text=dimension)
