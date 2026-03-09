@@ -83,7 +83,11 @@ async def product_callback(c: CallbackQuery, state: FSMContext):
             await c.answer("Еще нет видеообзора", show_alert=True)
     else:
         await c.answer()
-        dimension, dimension_photo = await get_product_dimension(product_id=int(item_id))
+        result = await get_product_dimension(product_id=int(item_id))
+        if result is None:
+            await c.message.reply_text(text="Размерная сетка недоступна")
+            return
+        dimension, dimension_photo = result
         if dimension_photo:
             try:
                 await c.message.reply_photo(photo=dimension_photo, caption=dimension)
