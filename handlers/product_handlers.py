@@ -85,7 +85,7 @@ async def product_callback(c: CallbackQuery, state: FSMContext):
         await c.answer()
         result = await get_product_dimension(product_id=int(item_id))
         if result is None:
-            await c.message.reply_text(text="Размерная сетка недоступна")
+            await c.message.reply(text="Размерная сетка недоступна")
             return
         dimension, dimension_photo = result
         if dimension_photo:
@@ -95,4 +95,4 @@ async def product_callback(c: CallbackQuery, state: FSMContext):
                 logger.error(f"Ошибка отправки dimension фото для продукта #{item_id}: {e}")
                 await c.message.reply(text=dimension)
         else:
-            await c.message.reply_text(text=dimension)
+            await c.message.reply(text=dimension)
