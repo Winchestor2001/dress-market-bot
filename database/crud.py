@@ -248,8 +248,9 @@ async def get_product_video_review(product_id: int):
 
 async def get_product_dimension(product_id: int):
     product = Product.get_or_none(Product.id == product_id)
-    if product and product.dimension and product.category.dimension_photo:
-        return product.dimension, product.category.dimension_photo
+    if product and product.dimension:
+        dimension_photo = product.category.dimension_photo if product.category else None
+        return product.dimension, dimension_photo
     return None
 
 
